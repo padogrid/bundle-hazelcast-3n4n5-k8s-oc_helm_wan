@@ -1,6 +1,6 @@
-# Hazelcast OpenShift Operator WAN Replication
+# Hazelcast WAN Replication on OpenShift using Helm Charts
 
-This bundle demonstrates the Hazelcast WAN topology by replicating data between two (2) Hazlecast clusters running on OpenShift.
+This bundle demonstrates the Hazelcast WAN topology by replicating data between two (2) Hazlecast Helm Chart clusters running on OpenShift.
 
 ## Installing Bundle
 
