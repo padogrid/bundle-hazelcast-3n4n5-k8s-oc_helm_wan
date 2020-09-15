@@ -1,0 +1,39 @@
+# Security Context properties
+securityContext:
+  # enabled is a flag to enable Security Context
+  enabled: true
+  # runAsUser is the user ID used to run the container
+  runAsUser: 1000750000
+  # runAsGroup is the primary group ID used to run all processes within any container of the pod
+  runAsGroup: 1000750000
+  # fsGroup is the group ID associated with the container
+  fsGroup: 1000750000
+
+hazelcast:
+  yaml:
+    hazelcast:
+      properties:
+        hazelcast.phone.home.enabled: false
+      network:
+        join:
+          multicast:
+            enabled: false
+          kubernetes:
+            enabled: true
+            service-name: ${serviceName}
+            namespace: ${namespace}
+        rest-api:
+          enabled: true
+          endpoint-groups:
+            HEALTH_CHECK:
+              enabled: true
+      hot-restart-persistence:
+        enabled: ${hazelcast.hotRestart}
+        base-dir: /data/hot-restart
+        validation-timeout-seconds: 1200
+        data-load-timeout-seconds: 900
+        auto-remove-stale-data: true
+
+  # configurationFiles are any additional Hazelcast configuration files
+  # configurationFiles:
+

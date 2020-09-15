@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Delete all resrouces
+
+SYNOPSIS
+   $EXECUTABLE wan1|wan2 [-all] [-?]
+
+DESCRIPTION
+   Deletes all Hazelccast resources but the management persistent claim. To delete the persistent claim,
+   specify the '-all' option.
+
+   -all
+             If specified then it also deletes pvc.
+
+EOF
+exit
+fi
+
+WAN=$1
+if [ "$WAN" != "wan1" ] && [ "$WAN" != "wan2" ]; then
+   echo >&2 "ERROR: Invalid input: [$WAN]. Please enter wan1 or wan2."
+   exit 1
+fi
+
+if [ "$WAN" == "wan1" ]; then
+   NAMESPACE=$PROJECT_WAN1
+else
+   NAMESPACE=$PROJECT_WAN2
+fi
+
+echo ""
+echo "    WAN: $WAN"
+echo "Project: $NAMESPACE"
+echo ""
+
+echo "Deleting Hazelcast resources..."
+helm delete --namespace $NAMESPACE ${CHART_REFERENCE_NAME}
+pushd $APP_DIR/$WAN/hazelcast > /dev/null
+oc delete -f secret.yaml
+popd > /dev/null
+
+# Delete the rest if ALL specified
+if [ "$ALL" == "true" ]; then
+   echo "Deleting pvc..."
+   oc delete pvc --namespace=$NAMESPACE mancenter-storage-${CHART_REFERENCE_NAME}-hazelcast-enterprise-mancenter-0
+fi

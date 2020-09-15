@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Delete all resources
+
+SYNOPSIS
+   $EXECUTABLE [-all] [-?]
+
+DESCRIPTION
+   Deletes all (both wan1 and wan2) but persistent claim resources. To delete pvc, pv, and storage, specify the '-all' option.
+
+OPTIONS
+   -all
+             If specified then it also deletes pvc, pv, and storage.
+
+EOF
+exit
+fi
+
+if [ "$ALL" == "true" ]; then
+   echo "Cleaning up all resources including pvc, pv, storage for both projects..."
+else
+   echo "Cleaning up resources excluding pvc, pv, storage for both projects..."
+fi
+
+./stop_padogrid wan1 $*
+./stop_hazelcast wan1 $*
+./stop_padogrid wan2 $*
+./stop_hazelcast wan2 $*
+
+if [ "$ALL" == "true" ]; then
+   pushd $APP_DIR/cluster > /dev/null
+   oc label namespace $PROJECT_WAN1 hazelcast=false
+   oc label namespace $PROJECT_WAN2 hazelcast=false
+   oc apply -f wan1-netpol.yaml
+   oc apply -f wan2-netpol.yaml
+   oc delete -f hazelcast-rbac.yaml
+   oc apply -f operator-rbac.yaml
+   # Patch required. Otherwise, CRD delete will hang.
+   oc patch crd/hazelcastenterprises.hazelcast.com -p '{"metadata":{"finalizers":[]}}' --type=merge
+   oc delete -f hazelcastcluster.crd.yaml
+   oc delete -f pv-hostPath.yaml > /dev/null 2>&1
+   popd > /dev/null
+fi
+
+echo "Clean up complete."

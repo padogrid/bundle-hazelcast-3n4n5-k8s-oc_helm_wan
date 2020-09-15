@@ -1,0 +1,17 @@
+# A template for a NetworkPolicy that matches any pods labelled role=hazelcast-wan
+# inside the wan1 project and allows them to communicate out to any projects
+# labelled hazelcast="true"
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  name: hazelcast-wan1
+  namespace: ${PROJECT_NAMESPACE}
+spec:
+  podSelector:
+    matchLabels:
+      role: hazelcast
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          hazelcast: "true"

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    # hazelcast and role labels for project-to-project communications via NetworkPolicy
+    hazelcast: "true"
+    role: hazelcast
+  app: padogrid
+  name: padogrid
+  namespace: ${PROJECT_NAMESPACE}
+spec:
+  ports:
+  - name: hzport1
+    port: 5701
+    protocol: TCP
+    targetPort: hazelcast5701
+  - name: hzport2
+    port: 5702
+    protocol: TCP
+    targetPort: hazelcast5702
+  - name: hzport3
+    port: 5703
+    protocol: TCP
+    targetPort: hazelcast5703
+  selector:
+    name: padogrid
+    role: hazelcast
+  sessionAffinity: None
+  type: ClusterIP

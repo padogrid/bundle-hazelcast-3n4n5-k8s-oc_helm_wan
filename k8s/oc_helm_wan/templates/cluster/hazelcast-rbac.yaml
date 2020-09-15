@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hazelcast
+  labels:
+    app.kubernetes.io/name: hazelcast
+    app.kubernetes.io/instance: hazelcast
+    app.kubernetes.io/managed-by: hazelcast-enterprise-operator
+
+    # hazelcast and role labels for project-to-project communications via NetworkPolicy
+    hazelcast: "true"
+    role: hazelcast
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - list

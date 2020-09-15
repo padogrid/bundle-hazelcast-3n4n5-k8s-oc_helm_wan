@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$1" == "-?" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Start padogrid pod
+
+SYNOPSIS
+   $EXECUTABLE wan1|wan2 [storage_class] [-?]
+
+DESCRIPTION
+   Launches a PadoGrid pod with the name 'padogrid'. The storage_class should be 'local-storage' if you are
+   connected to your local CRC environment. Execute the following command to list the available storage classes.
+
+   oc get storageclass
+
+OPTIONS
+   wan1|wan2
+             This option is required. 'wan1' starts PadoGrid in the 'wan1' project and 'wan2' starts PadoGrid
+             in the 'wan2' project.
+
+   storage_class
+             The specified class name is used as the Storage Class Name for the 'paodgrid-pvc' Persistent
+             Volume Claim. If you are connected to CRC, then must specify 'local-storage'. The 'local-storeage'
+             persistent volumes must also be created beforehand as described in the bundle instructions.
+             If this is not specified, then the default storage class is assigned.
+
+EXAMPLES
+   # Start in wan1 with the default StorageClass
+   ./$EXECUTABLE wan1
+
+   # Start in wan1 with local-storage SotrageClass
+   ./$EXECUTABLE wan1 local-storage   
+
+   # Start in wan2 with the default StorageClass
+   ./$EXECUTABLE wan2
+
+   # Start in wan2 with local-storage SotrageClass
+   ./$EXECUTABLE wan2 local-storage   
+
+SEE ALSO
+   wan1/padogrid/, wan2/padogrid/
+
+EOF
+exit
+fi
+
+WAN=$1
+if [ "$WAN" != "wan1" ] && [ "$WAN" != "wan2" ]; then
+   echo >&2 "ERROR: Invalid input: [$WAN]. Please enter wan1 or wan2."
+   exit 1
+fi
+
+DEFAULT_STORAGE_CLASS_NAME=$(oc get storageclass | grep default | awk '{print $1}')
+STORAGE_CLASS_NAME="$2"
+if [ "$STORAGE_CLASS_NAME" == "" ]; then
+   STORAGE_CLASS_NAME=$DEFAULT_STORAGE_CLASS_NAME
+fi
+
+echo "Starting PadoGrid on $WAN..."
+oc process -f $APP_DIR/$WAN/padogrid/padogrid.yaml -o yaml -p=STORAGE_CLASS_NAME=$STORAGE_CLASS_NAME | oc create -f -

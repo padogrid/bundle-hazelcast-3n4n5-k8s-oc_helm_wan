@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$1" == "-?" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Deletes PadoGrid deployment
+
+SYNOPSIS
+   $EXECUTABLE wan1|wan2 [-all] [-?]
+
+DESCRIPTION
+   Deletes PadoGrid deployment pods. If '-all' is specified then it also deletes the persistent
+   claim and the 'local-storage' storage class.
+
+OPTIONS
+   wan1|wan2
+             This option is required. 'wan1' deletes resources in the '$PROJECT_WAN1' project and 
+             'wan2' deletses resources in the '$PROJECT_WAN2' project.
+
+   -all
+             If specified then it also deletes the 'padogrid-pvc' persistent claim.
+
+EOF
+exit
+fi
+
+WAN=$1
+if [ "$WAN" != "wan1" ] && [ "$WAN" != "wan2" ]; then
+   echo >&2 "ERROR: Invalid input: [$WAN]. Please enter wan1 or wan2."
+   exit 1
+fi
+
+if [ "$WAN" == "wan1" ]; then
+   NAMESPACE=$PROJECT_WAN1
+else
+   NAMESPACE=$PROJECT_WAN2
+fi
+
+echo "Deleting PadoGrid..."
+oc delete all -l app=padogrid --namespace=$NAMESPACE
+if [ "$ALL" == "true" ]; then
+   echo "Deleting PadoGrid pvc, pv, and local-storage..."
+   oc delete --namespace=$NAMESPACE pvc padogrid-pvc
+fi

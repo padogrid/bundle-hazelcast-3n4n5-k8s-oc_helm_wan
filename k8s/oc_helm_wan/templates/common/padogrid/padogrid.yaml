@@ -1,0 +1,87 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: padogrid-persistent-template
+  app: ${APP_NAME}
+
+  # hazelcast and role labels for project-to-project communications via NetworkPolicy
+  hazelcast: "true"
+  role: hazelcast
+metadata:
+  annotations:
+    description: PadoGrid persistent volume and claim.
+  name: padogrid-persistent
+  namespace: ${NAMESPACE}
+
+objects:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${APP_NAME}-pvc
+    namespace: ${NAMESPACE}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
+    storageClassName: ${STORAGE_CLASS_NAME}
+  
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${APP_NAME}
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      name: ${APP_NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: ${APP_NAME}
+      spec:
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001
+        containers:
+        - image: docker.io/padogrid/padogrid:0.9.3-SNAPSHOT-2
+          name: padogrid
+          volumeMounts:
+          - mountPath: /opt/padogrid/workspaces
+            name: ${APP_NAME}-data
+        volumes:
+        - name: ${APP_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${APP_NAME}-pvc
+parameters:
+- description: The application name
+  displayName: Application Name
+  name: NAMESPACE
+  required: true
+  value: ${PROJECT_NAMESPACE}
+- description: The application name
+  displayName: Application Name
+  name: APP_NAME
+  required: true
+  value: padogrid
+- description: Volume space available for data, e.g., 512Mi, 2Gi.
+  displayName: Volume Capacity
+  name: VOLUME_CAPACITY
+  required: true
+  value: 4Gi
+- description: Storage class name
+  displayName: Sotrage Class Name
+  name: STORAGE_CLASS_NAME
+  required: false
+

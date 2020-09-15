@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Start the Hazelcast OpenShift operator and a Hazelcast cluster
+
+SYNOPSIS
+   $EXECUTABLE wan1|wan2 [-?]
+
+DESCRIPTION
+   Starts the Hazelcast OpenShift operator and a Hazelcast cluster.
+
+OPTIONS
+   wan1|wan2
+             This option is required. 'wan1' stops Hazelcast in the '$PROJECT_WAN1' project and 
+             'wan2' stops Hazelcast in the '$PROJECT_WAN2' project.
+
+SEE ALSO
+   wan1/hazelcast/, wan2/hazelast/
+
+EOF
+exit
+fi
+
+WAN=$1
+if [ "$WAN" != "wan1" ] && [ "$WAN" != "wan2" ]; then
+   echo >&2 "ERROR: Invalid input: [$WAN]. Please enter wan1 or wan2."
+   exit 1
+fi
+
+if [ "$WAN" == "wan1" ]; then
+   NAMESPACE=$PROJECT_WAN1
+else
+   NAMESPACE=$PROJECT_WAN2
+fi
+
+echo ""
+echo "WAN=$WAN"
+echo "NAMESPACE=$NAMESPACE"
+echo ""
+
+pushd $APP_DIR/$WAN/hazelcast > /dev/null
+   oc apply --namespace=$NAMESPACE -f secret.yaml
+   helm install --values=values.yaml \
+                --namespace=$NAMESPACE \
+                --set hazelcast.licenseKeySecretName=hz-license-key-secret \
+                ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
+popd > /dev/null

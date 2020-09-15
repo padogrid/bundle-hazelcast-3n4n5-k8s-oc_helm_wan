@@ -25,7 +25,7 @@ plugins
 apps
 clusters
 docker
-k8s
+#k8s
 pods
 
 # Bundle specifics
@@ -33,5 +33,7 @@ archive
 log
 lib
 desktop
-setenv.sh0
 build
+k8s/oc_helm_wan/cluster
+k8s/oc_helm_wan/wan1
+k8s/oc_helm_wan/wan2

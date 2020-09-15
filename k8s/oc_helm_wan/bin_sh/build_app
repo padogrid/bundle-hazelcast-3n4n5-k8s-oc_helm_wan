@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Build a Hazelcast OpenShift Operator environment
+
+SYNOPSIS
+   $EXECUTABLE [-?]
+
+DESCRIPTION
+   Builds a Hazelcast OpenShift Operator environment by downloading all the necessary files and making adjustments
+   to the downloaded files. 
+
+DEFAULT:
+   ./$EXECUTABLE
+
+EOF
+exit
+fi
+
+#
+# Encrypt license key
+#
+IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64)
+
+#
+# Copy template files
+#
+if [ ! -d $APP_DIR/cluster ]; then
+   mkdir $APP_DIR/cluster
+fi
+cp $APP_DIR/templates/cluster/pv-hostPath.yaml $APP_DIR/cluster
+cp $APP_DIR/templates/cluster/hazelcastcluster.crd.yaml $APP_DIR/cluster
+cp $APP_DIR/templates/cluster/operator-rbac.yaml $APP_DIR/cluster
+cp $APP_DIR/templates/cluster/hazelcast-rbac.yaml $APP_DIR/cluster
+for i in $(seq 1 2); do
+   if [ $i -eq 1 ]; then
+      PROJECT_NAMESPACE=$PROJECT_WAN1
+   else
+      PROJECT_NAMESPACE=$PROJECT_WAN2
+   fi
+   if [ ! -d $APP_DIR/wan$i ]; then
+      mkdir $APP_DIR/wan$i
+   fi
+   cp -r $APP_DIR/templates/common/* $APP_DIR/wan$i/
+   cp -r $APP_DIR/templates/wan$i/* $APP_DIR/wan$i/
+   pushd $APP_DIR/wan$i/hazelcast > /dev/null
+   sed -i${__SED_BACKUP} "s/\${PROJECT_NAMESPACE}/$PROJECT_NAMESPACE/" *.yaml
+   sed -i${__SED_BACKUP} "s/<base64-hz-license-key>/$IMDG_LICENSE_KEY_BASE64/" secret.yaml
+   rm *.yaml0
+   popd > /dev/null
+   pushd $APP_DIR/wan$i/padogrid > /dev/null
+   sed -i${__SED_BACKUP} "s/\${PROJECT_NAMESPACE}/$PROJECT_NAMESPACE/" *.yaml
+   rm *.yaml0
+   popd > /dev/null
+   sed "s/\${PROJECT_NAMESPACE}/$PROJECT_NAMESPACE/" $APP_DIR/templates/cluster/wan$i-netpol.yaml > $APP_DIR/cluster/wan$i-netpol.yaml
+done
+
+#
+# Display build information
+#
+echo ""
+echo "Projects:"
+echo ""
+echo "   PROJECT_WAN1=$PROJECT_WAN1"
+echo "   PROJECT_WAN2=$PROJECT_WAN2"
+echo ""
+echo "Created 'wan1' and 'wan2' configuration files:"
+echo ""
+echo "   ../cluster"
+echo "   ../wan1"
+echo "   ../wan2"
+echo ""
+echo "Updated 'secret.yaml' with the Hazelcast Enterprise license key:"
+echo ""
+echo "   ../wan1/hazelcast/secret.yaml"
+echo "   ../wan2/hazelcast/secret.yaml"
+echo ""
+echo "Build complete"
+echo ""

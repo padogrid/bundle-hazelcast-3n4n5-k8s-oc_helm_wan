@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Initialize the $PROJECT_WAN1 Hazelcast configuration files
+
+SYNOPSIS
+   $EXECUTABLE wan1|wan2 [-?]
+
+DESCRIPTION
+   Initializes the $PROJECT_WAN1 Hazelcast configuration files
+
+EOF
+exit
+fi
+
+NAMESPACE=$PROJECT_WAN2
+POD_LIST=$(oc get pods --namespace=$NAMESPACE -o wide | grep hazelcast-enterprise- | grep -v mancenter | awk '{ print $6 }')
+
+# Determine Hazelcast member IP addresses
+MEMBER_ADDRESSES=""
+let MEMBER_COUNT=0
+for i in $POD_LIST; do
+   if [ "$i" == "<none>" ]; then
+      continue;
+   fi
+   let MEMBER_COUNT=MEMBER_COUNT+1
+   ADDRESS="$i:5701"
+   if [ "$MEMBER_ADDRESSES" == "" ]; then
+      MEMBER_ADDRESSES="${ADDRESS}"
+   else
+      MEMBER_ADDRESSES="${MEMBER_ADDRESSES},${ADDRESS}"
+   fi
+done
+
+cp -r $APP_DIR/templates/wan1/hazelcast/values.yaml $APP_DIR/wan1/hazelcast/
+pushd $APP_DIR/wan1/hazelcast > /dev/null
+sed -i${__SED_BACKUP} "s/\${PROJECT_NAMESPACE}/$PROJECT_WAN1/" values.yaml
+sed -i${__SED_BACKUP} "s/\${WAN_TARGET_END_POINTS}/$MEMBER_ADDRESSES/" values.yaml
+rm values.yaml0
+popd > /dev/null
+
+echo ""
+echo "wan1 target-endpoints updated with wan2 cluster IP addresses"
+echo ""
+echo "   target-endpoints: $MEMBER_ADDRESSES"
+echo "   File: ../etc/wan1/hazelcast/values.yaml"
+echo ""
