@@ -3,11 +3,11 @@ securityContext:
   # enabled is a flag to enable Security Context
   enabled: true
   # runAsUser is the user ID used to run the container
-  runAsUser: 1000750000
+  runAsUser: 1000770000
   # runAsGroup is the primary group ID used to run all processes within any container of the pod
-  runAsGroup: 1000750000
+  runAsGroup: 1000770000
   # fsGroup is the group ID associated with the container
-  fsGroup: 1000750000
+  fsGroup: 1000770000
 
 hazelcast:
   yaml:
