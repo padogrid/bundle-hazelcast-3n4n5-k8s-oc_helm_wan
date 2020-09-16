@@ -211,7 +211,7 @@ cd_k8s oc_helm_wan
 vi wan2/hazelcast/values.yaml
 ```
 
-Using the above output example, enter a valid value as follows.
+For our example, we would enter a valid value in the `values.yaml` file as follows.
 
 ```yaml
 # Security Context properties
