@@ -29,8 +29,7 @@ if [ "$POD_NAME" == "" ]; then
    POD_NAME="$(oc get pods |grep padogrid-1 | grep -v deploy | sed 's/ .*//')"
 fi
 if [ "$POD_NAME" == "" ]; then
-   echo  >&2 "ERROR: Kafka pod name required"
-   echo "Usage: ./$EXECUTABLE padogrid_pod_name"
+   echo  >&2 "ERROR: PadoGrid pod not found in this project. Please see the usage."
    exit 1
 fi
 
