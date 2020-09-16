@@ -11,7 +11,7 @@ NAME
    $EXECUTABLE - Initialize the $PROJECT_WAN1 Hazelcast configuration files
 
 SYNOPSIS
-   $EXECUTABLE wan1|wan2 [-?]
+   $EXECUTABLE [-?]
 
 DESCRIPTION
    Initializes the $PROJECT_WAN1 Hazelcast configuration files
