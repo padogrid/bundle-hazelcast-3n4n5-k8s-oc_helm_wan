@@ -24,6 +24,18 @@ EOF
 exit
 fi
 
+if [ "$(which helm)" == "" ]; then
+   echo >&2 "ERROR: The 'helm' executable not found. Command aborted."
+   exit 1
+fi
+
+#
+# Add Hazelcast Helm repo
+#
+helm repo add hazelcast https://hazelcast-charts.s3.amazonaws.com/
+helm repo update
+echo ""
+
 #
 # Encrypt license key
 #
