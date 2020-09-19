@@ -86,11 +86,11 @@ oc new-project $PROJECT_WAN1
 oc new-project $PROJECT_WAN2
 ```
 
-## 2. CRC Users: Create Mountable Persistent Volumes in Master Node
+## 2. CRC Users (Optional): Create Mountable Persistent Volumes in Master Node
 
-**If you are connected to OCP then you can skip this section.**
+**This section is optional and only applies to CRC users.**
 
-If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (OCP), then we need to create additional persistent volumes using **hostPath** for PadoGrid. Let’s create these volumes in the master node as follows.
+If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (O    CP), then to allow read/write permissions, we need to create additional persistent volumes usi    ng **hostPath** for PadoGrid. PadoGrid stores workspaces in the `/opt/padogrid/workspaces` dir    ectory, which can be optionally mounted to a persistent volume. Let’s create a couple of volum    es in the master node as follows.
 
 ```bash
 # Login to the master node
@@ -116,7 +116,7 @@ We will use the volumes created as follows:
 We can now create the required persistent volumes using **hostPath** by executing the following.
 
 ```bash
-cd_k8s oc_operator; cd padogrid
+cd_k8s oc_helm_wan; cd padogrid
 oc create -f pv-hostPath.yaml
 ```
 
@@ -205,6 +205,7 @@ Events:
   Type     Reason        Age                  From                    Message
   ----     ------        ----                 ----                    -------
   Warning  FailedCreate  46s (x15 over 2m8s)  statefulset-controller  create Pod hazelcast-enterprise-0 in StatefulSet hazelcast-enterprise failed error: pods "hazelcast-enterprise-0" is forbidden: unable to validate against any security context constraint: [fsGroup: Invalid value: []int64{1000750000}: 1000750000 is not an allowed group spec.containers[0].securityContext.securityContext.runAsUser: Invalid value: 1000750000: must be in the ranges: [1000770000, 1000779999]]```
+```
 
 If you see the warning event similar to the above then you need to enter the valid value in the `wan2/hazelcast/values.yaml` file as follows.
 
