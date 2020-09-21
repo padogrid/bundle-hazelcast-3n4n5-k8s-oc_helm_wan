@@ -50,5 +50,5 @@ popd > /dev/null
 # Delete the rest if ALL specified
 if [ "$ALL" == "true" ]; then
    echo "Deleting pvc..."
-   oc delete pvc --namespace=$NAMESPACE mancenter-storage-${CHART_REFERENCE_NAME}-hazelcast-enterprise-mancenter-0
+   oc delete pvc --namespace=$NAMESPACE mancenter-storage-${CHART_REFERENCE_NAME}-mancenter-0
 fi

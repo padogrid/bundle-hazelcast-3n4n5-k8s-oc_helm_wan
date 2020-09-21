@@ -42,7 +42,7 @@ if [ "$ALL" == "true" ]; then
    oc delete -f wan1-netpol.yaml
    oc delete -f wan2-netpol.yaml
    oc delete -f hazelcast-rbac.yaml
-   oc apply -f operator-rbac.yaml
+   oc delete -f operator-rbac.yaml
    # Patch required. Otherwise, CRD delete will hang.
    oc patch crd/hazelcastenterprises.hazelcast.com -p '{"metadata":{"finalizers":[]}}' --type=merge
    oc delete -f hazelcastcluster.crd.yaml
