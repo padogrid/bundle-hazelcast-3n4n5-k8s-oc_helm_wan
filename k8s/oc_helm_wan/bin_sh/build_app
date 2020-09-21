@@ -39,7 +39,11 @@ echo ""
 #
 # Encrypt license key
 #
-IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64)
+if [[ ${OS_NAME} == DARWIN* ]]; then
+   IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64)
+else
+   IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64 -w 0)
+fi
 
 #
 # Copy template files
