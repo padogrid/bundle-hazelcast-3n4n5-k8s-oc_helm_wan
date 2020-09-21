@@ -140,7 +140,6 @@ PadoGrid runs as a non-root user that requires read/write permissions to the per
 
 ```bash
 oc edit scc anyuid
-anyuid SCC:
 ```
 
 Add your project under the `users:` section. For example, if your projects are `wan1` and `wan2` then add the following line.
@@ -238,7 +237,7 @@ cd_k8s oc_helm_wan; cd bin_sh
 ./start_hazelcast wan2
 ```
 
-Wait till the `$PROJECT_WAN2` cluster has all **three (3)** pods running. You can run the `show_member_ips` script as follows.
+Wait till the `$PROJECT_WAN2` cluster has all **three (3)** pods running. You can run the `show_member_ips` script to monitor the cluster IP addresses as follows.
 
 ```bash
 watch ./show_hazelcast_ips wan2
@@ -360,19 +359,14 @@ Open the browser with both Mangement Center URLs and login using the user name `
 
 Start PadoGrid in the `$PROJECT_WAN1` project. We will use PadoGrid to ingest data into the **wan1** cluster, which in turn will replicate the data to the **wan2** cluster. 
 
-### CRC Users
-
-```bash
-cd_k8s oc_helm_wan; cd bin_sh
-./start_padogrid wan1 local-storage
-```
-
-### OCP Users
-
 ```bash
 cd_k8s oc_helm_wan; cd bin_sh
 ./start_padogrid wan1
 ```
+
+The `start_padogrid` script sets the Hazelcast service and the namespace so that the `perf_test` app can auto-configure the DNS address when connencting to the Hazelcast cluster.
+
+*If `perf_test` in the next section fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in [Section 10](#10-manually-configuring-perf_test).*
 
 ## 9. Ingest Data to `$PROJECT_WAN1`
 
@@ -384,23 +378,13 @@ oc project $PROJECT_WAN1
 ./login_padogrid_pod
 ```
 
-Create the `perf_test` app and edit `hazelcast-client.xml` from the PadoGrid pod.
+Create the `perf_test` app.
 
 ```bash
 create_app
-cd_app perf_test
-vi etc/hazelcast-client.xml
 ```
 
-Replace the `<cluster-members>` element with the following `<kubernetes>` element in the `etc/hazelcast-client.xml` file. We form the service DNS with the service, `hazelcast-enterprise`, and the project, `wan1` following the Kubernetes naming conventions. This will connect `perf_test` to the Hazelcast cluster running in the `wan1` project. Make sure to replace `wan1` with your first project name, i.e., $PROJECT_WAN1.
-
-```xml
-                <kubernetes enabled="true">
-                        <service-dns>hazelcast-enterprise.wan1.svc.cluster.local</service-dns>
-                </kubernetes>
-```
-
-### Eligibility and Profile
+### 9.1. Eligibility and Profile
 
 Ingest eligibility and profile blobs into Hazelcast in `$PROJECT_WAN1`.
 
@@ -417,7 +401,7 @@ cd_app perf_test; cd bin_sh
 ./read_cache profile
 ```
 
-### Customer and Order
+### 9.2. Customer and Order
 
 If you want to ingest additional data that are not blobs, then first build the `perf_test` and run `test_group` as shown below.
 
@@ -443,7 +427,24 @@ Exit from the PadoGrid pod.
 exit
 ```
 
-## Teardown
+## 10. Manually Configuring `perf_test`
+
+The `test_ingestion` and `test_group` scripts may fail to connect to the Hazelcast cluster if you start PadoGrid before you start Hazelcast. In that case, restarting PadoGrid should fix the problem. If it still fails even after you started Hazelcast before PadoGrid, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
+
+```bash
+cd_app perf_test
+vi etc/hazelcast-client-k8s.xml
+```
+
+Enter the following in the `etc/hazelcast-client-k8s.xml` file. `hazelcast-enterprise` is the service and  `wan1` is the project name.
+
+```xml
+                <kubernetes enabled="true">
+                        <service-dns>hazelcast-enterprise.wan1.svc.cluster.local</service-dns>
+                </kubernetes>
+```
+
+## 11. Teardown
 
 :exclamation: The cleanup script may hang due to a known customer resource finalizer issue [3]. If it hangs, then Ctrl+C and run it again. The `cleanp` script remove the CRD finalizers before deleting the CRD but you might need to run it twice to overcome the hanging issue.
 
