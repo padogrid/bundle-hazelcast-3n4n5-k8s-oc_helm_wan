@@ -10,6 +10,7 @@ securityContext:
   fsGroup: 1000770000
 
 hazelcast:
+  javaOpts: -Dhazelcast.jmx=true -Dhazelcast.shutdownhook.enabled=true -Dhazelcast.graceful.shutdown.max.wait=600 -Dhazelcast.shutdownhook.policy=GRACEFUL
   yaml:
     hazelcast:
       properties:
@@ -30,13 +31,6 @@ hazelcast:
               enabled: true
             DATA:
               enabled: true
-      hot-restart-persistence:
-        enabled: ${hazelcast.hotRestart}
-        base-dir: /data/hot-restart
-        validation-timeout-seconds: 1200
-        data-load-timeout-seconds: 900
-        auto-remove-stale-data: true
-
   # configurationFiles are any additional Hazelcast configuration files
   # configurationFiles:
 

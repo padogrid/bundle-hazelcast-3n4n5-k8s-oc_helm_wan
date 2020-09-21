@@ -10,6 +10,7 @@ securityContext:
   fsGroup: 1000750000
 
 hazelcast:
+  javaOpts: -Dhazelcast.jmx=true -Dhazelcast.shutdownhook.enabled=true -Dhazelcast.graceful.shutdown.max.wait=600 -Dhazelcast.shutdownhook.policy=GRACEFUL
   yaml:
     hazelcast:
       properties:
