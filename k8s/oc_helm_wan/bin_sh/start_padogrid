@@ -73,9 +73,14 @@ if [ "$STORAGE_CLASS_NAME" == "" ]; then
    STORAGE_CLASS_NAME=$DEFAULT_STORAGE_CLASS_NAME
 fi
 
+HAZELCAST_SERVICE="$(oc get svc | grep 5701 | awk '{ print $1 }')"
+if [ "$HAZELCAST_SERVICE" == "" ]; then
+  HAZELCAST_SERVICE="$PROJECT_NAME-hazelcast-enterprise"
+fi
+
 echo "Starting PadoGrid on $WAN..."
 if [ "$STORAGE_CLASS_NAME" == "" ]; then
-   oc process -f $APP_DIR/padogrid/padogrid-no-pvc.yaml -o yaml | oc create -f -
+   oc process -p HAZELCAST_SERVICE=$HAZELCAST_SERVICE -f $APP_DIR/padogrid/padogrid-no-pvc.yaml -o yaml | oc create -f -
 else
-   oc process -f $APP_DIR/$WAN/padogrid/padogrid.yaml -o yaml -p=STORAGE_CLASS_NAME=$STORAGE_CLASS_NAME | oc create -f -
+   oc process -p HAZELCAST_SERVICE=$HAZELCAST_SERVICE -f $APP_DIR/$WAN/padogrid/padogrid.yaml -o yaml -p=STORAGE_CLASS_NAME=$STORAGE_CLASS_NAME | oc create -f -
 fi
