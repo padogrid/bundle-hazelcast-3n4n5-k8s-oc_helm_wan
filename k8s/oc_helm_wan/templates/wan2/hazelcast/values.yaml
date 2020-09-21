@@ -15,17 +15,20 @@ hazelcast:
       properties:
         hazelcast.phone.home.enabled: false
       network:
-        join:
-          multicast:
-            enabled: false
-          kubernetes:
-            enabled: true
-            service-name: ${serviceName}
-            namespace: ${namespace}
         rest-api:
           enabled: true
           endpoint-groups:
+            CLUSTER_READ:
+              enabled: true
+            CLUSTER_WRITE:
+              enabled: true
             HEALTH_CHECK:
+              enabled: true
+            HOT_RESTART:
+              enabled: true
+            WAN:
+              enabled: true
+            DATA:
               enabled: true
       hot-restart-persistence:
         enabled: ${hazelcast.hotRestart}

@@ -1,7 +1,7 @@
 # A template for a NetworkPolicy that matches any pods labelled role=hazelcast
 # inside the wan2 project and allows them to communicate out to any projects
 # labelled hazelcast="true"
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: hazelcast-wan2
