@@ -8,7 +8,7 @@ if [ "$1" == "-?" ]; then
 cat <<EOF
 
 NAME
-   $EXECUTABLE - Intialize cluster-level resources
+   $EXECUTABLE - Initialize cluster-level resources
 
 SYNOPSIS
    $EXECUTABLE wan1|wan2 [storage_class] [-?]

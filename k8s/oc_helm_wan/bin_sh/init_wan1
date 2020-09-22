@@ -39,12 +39,19 @@ for i in $POD_LIST; do
    fi
 done
 
-cp -r $APP_DIR/templates/wan1/hazelcast/values.yaml $APP_DIR/wan1/hazelcast/
-pushd $APP_DIR/wan1/hazelcast > /dev/null
-sed -i${__SED_BACKUP} "s/\${PROJECT_NAMESPACE}/$PROJECT_WAN1/" values.yaml
-sed -i${__SED_BACKUP} "s/\${WAN_TARGET_END_POINTS}/$MEMBER_ADDRESSES/" values.yaml
-rm values.yaml0
-popd > /dev/null
+if [ -f "$APP_DIR/wan1/hazelcast/values.yaml" ]; then
+   pushd $APP_DIR/wan1/hazelcast > /dev/null
+   sed -i${__SED_BACKUP} "s/target-endpoints:.*$/target-endpoints: $MEMBER_ADDRESSES/" values.yaml
+   rm values.yaml0
+   popd > /dev/null
+else
+   cp -r $APP_DIR/templates/wan1/hazelcast/values.yaml $APP_DIR/wan1/hazelcast/
+   pushd $APP_DIR/wan1/hazelcast > /dev/null
+   sed -i${__SED_BACKUP} "s/\${PROJECT_NAMESPACE}/$PROJECT_WAN1/" values.yaml
+   sed -i${__SED_BACKUP} "s/\${WAN_TARGET_END_POINTS}/$MEMBER_ADDRESSES/" values.yaml
+   rm values.yaml0
+   popd > /dev/null
+fi
 
 echo ""
 echo "wan1 target-endpoints updated with wan2 cluster IP addresses"
