@@ -22,7 +22,7 @@ This bundle installs PadoGrid and Hazelcast containers in two separate projects 
 - OpenShift Client, **oc**
 - [Helm](https://helm.sh/docs/intro/install/), **helm**
 
-:exclamation: This bundle depends on `redhat/openshift-ovs-networkpolicy`, to create **NetworkPolicy** objects for enabling communications between projects. Please see [Section 5](#5-initialize-openshift-cluster),  [1] and [2] for details.
+:exclamation: If you are using OpenShift 3.x (3.11+ in particular), then this bundle depends on `redhat/openshift-ovs-networkpolicy`, to create **NetworkPolicy** objects for enabling communications between projects. The `bin_sh/init_netpol` script is provided to allow project-to-project network connections. Please see [Section 5](#5-initialize-openshift-cluster),  [1] and [2] for details.
 
 ## Directory Tree View
 
@@ -32,6 +32,7 @@ oc_helm_wan/
 │   ├── build_app
 │   ├── cleanup
 │   ├── init_cluster
+│   ├── init_netpol
 │   ├── init_wan1
 │   ├── login_padogrid_pod
 │   ├── setenv.sh
@@ -152,15 +153,27 @@ users:
 
 ## 5. Initialize OpenShift Cluster
 
+### 5.1 CRD and Cluster Role
+
 We need to setup cluster-level objects to enable project-to-project communications. The `init_cluster` script is provided to accomplish the following:
 
-- Create **NetworkPolicy** Objects for both projects
 - Apply **CustomResourceDefintion** for Hazelcast Operator
 - Apply **ClusterRole** for Hazelcast Operator and Hazelcast
 
 ```bash
 cd_k8s oc_helm_wan; cd bin_sh
 ./init_cluster
+```
+
+### 5.2 NetworkPolicy (for OpenShift 3.x only)
+
+:exclamation: *Skip this section if are using OpenShift 4.x.*
+
+- Create **NetworkPolicy** Objects for both projects
+
+```bash
+cd_k8s oc_helm_wan; cd bin_sh
+./init_netpol
 ```
 
 You can view the **NetworkPolicy** objects as follows.
@@ -179,7 +192,7 @@ oc describe netpol <name>
 oc get netpol <name> -o yaml
 ```
 
-:pencil2: NetworkPolicy is project scoped such that it will be deleted when the project is deleted.
+:pencil2: *NetworkPolicy is project scoped such that it will be deleted when the project is deleted.*
 
 ## 6.1. Launch Hazelcast in `$PROJECT_WAN2`
 

@@ -11,12 +11,11 @@ NAME
    $EXECUTABLE - Initialize cluster-level resources
 
 SYNOPSIS
-   $EXECUTABLE wan1|wan2 [storage_class] [-?]
+   $EXECUTABLE [-?]
 
 DESCRIPTION
    Intializes cluster-level resources as follows:
    
-   - Configure NetworkPolicy for '$PROJECT_WAN1' and '$PROJECT_WAN2'.
    - Apply CustomResourceDefinition
    - Apply ClusterRole for Hazelcast operator and Hazelcast. 
 
@@ -29,9 +28,6 @@ fi
 
 oc label namespace $PROJECT_WAN1 hazelcast=true
 oc label namespace $PROJECT_WAN2 hazelcast=true
-
-oc create -f $APP_DIR/cluster/wan1-netpol.yaml
-oc create -f $APP_DIR/cluster/wan2-netpol.yaml
 
 oc apply -f $APP_DIR/cluster/hazelcastcluster.crd.yaml
 oc apply -f $APP_DIR/cluster/operator-rbac.yaml

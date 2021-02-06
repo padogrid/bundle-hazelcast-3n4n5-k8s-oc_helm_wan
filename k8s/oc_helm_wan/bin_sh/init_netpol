@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$1" == "-?" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Configures NetworkPolicy for '$PROJECT_WAN1' and '$PROJECT_WAN2'
+
+SYNOPSIS
+   $EXECUTABLE [-?]
+
+DESCRIPTION
+   Configures NetworkPolicy for '$PROJECT_WAN1' and '$PROJECT_WAN2'. Run this script only if
+   you are unable to connect between services from different projects. You might experience this
+   in OpenShift 3.x (3.11+ in particluar).
+
+SEE ALSO
+   cluster/
+
+EOF
+exit
+fi
+
+oc create -f $APP_DIR/cluster/wan1-netpol.yaml
+oc create -f $APP_DIR/cluster/wan2-netpol.yaml
