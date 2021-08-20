@@ -194,7 +194,9 @@ oc get netpol <name> -o yaml
 
 :pencil2: *NetworkPolicy is project scoped such that it will be deleted when the project is deleted.*
 
-## 6.1. Launch Hazelcast in `$PROJECT_WAN2`
+## 6. Lauch Hazelcast
+
+### 6.1. Launch Hazelcast in `$PROJECT_WAN2`
 
 Launch the Hazelcast cluster in the `$PROJECT_WAN2` project first. Since Hazelcast currently does not provide the WAN discovery service, we must first start the target cluster and get its member cluster IP addresses.
 
@@ -271,7 +273,7 @@ Hazelcast Cluster IP Addresses Determined:
 Service DNS: hazelcast-enterprise.wan2.svc.cluster.local
 ```
 
-## 6.2. Launch Hazelcast in `$PROJECT_WAN1`
+### 6.2. Launch Hazelcast in `$PROJECT_WAN1`
 
 Once `$PROJECT_WAN2` cluster has all the Hazelcast members running, run the `init_wan1` script to intialize the Hazelcast configuration files for the `$PROJECT_WAN1` project. The `init_wan1` script updates the `wan1/hazelcast/hazelcast.yaml` file with the `$PROJECT_WAN2` Hazelcast IP addresses for the WAN publisher.
 
