@@ -198,7 +198,7 @@ oc get netpol <name> -o yaml
 
 :pencil2: *NetworkPolicy is project scoped such that it will be deleted when the project is deleted.*
 
-## 6. Lauch Hazelcast
+## 6. Launch Hazelcast
 
 ### 6.1. Launch Hazelcast in `$PROJECT_WAN2`
 
