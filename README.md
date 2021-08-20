@@ -27,7 +27,7 @@ This bundle installs PadoGrid and Hazelcast containers in two separate projects 
 ## Directory Tree View
 
 ```console
-oc_helm_wan/
+k8s/oc_helm_wan/
 ├── bin_sh
 │   ├── build_app
 │   ├── cleanup
@@ -48,6 +48,10 @@ oc_helm_wan/
 │   ├── pv-hostPath.yaml
 │   ├── wan1-netpol.yaml
 │   └── wan2-netpol.yaml
+├── padogrid
+│   ├── padogrid-no-pvc.yaml
+│   ├── padogrid.yaml
+│   └── pv-hostPath.yaml
 └── templates
     ├── cluster
     ├── common
