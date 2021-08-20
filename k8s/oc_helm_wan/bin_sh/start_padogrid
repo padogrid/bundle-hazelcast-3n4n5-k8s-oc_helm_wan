@@ -80,7 +80,7 @@ fi
 
 echo "Starting PadoGrid on $WAN..."
 if [ "$STORAGE_CLASS_NAME" == "" ]; then
-   oc process -p HAZELCAST_SERVICE=$HAZELCAST_SERVICE -f $APP_DIR/padogrid/padogrid-no-pvc.yaml -o yaml | oc create -f -
+   oc process -p HAZELCAST_SERVICE=$HAZELCAST_SERVICE -f $APP_DIR/$WAN/padogrid/padogrid-no-pvc.yaml -o yaml | oc create -f -
 else
    oc process -p HAZELCAST_SERVICE=$HAZELCAST_SERVICE -f $APP_DIR/$WAN/padogrid/padogrid.yaml -o yaml -p=STORAGE_CLASS_NAME=$STORAGE_CLASS_NAME | oc create -f -
 fi
