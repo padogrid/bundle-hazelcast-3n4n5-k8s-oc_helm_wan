@@ -7,7 +7,7 @@ This bundle demonstrates the Hazelcast WAN topology by replicating data between 
 ## Installing Bundle
 
 ```bash
-install_bundle -download bundle-hazelcast-4-k8s-oc_helm_wan
+install_bundle -download bundle-hazelcast-3n4n5-k8s-oc_helm_wan
 ```
 
 ## Use Case
