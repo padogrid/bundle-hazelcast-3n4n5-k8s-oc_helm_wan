@@ -18,7 +18,6 @@ This bundle installs PadoGrid and Hazelcast containers in two separate projects 
 
 ## Required Software
 
-- PadoGrid 0.9.3-SNAPSHOT+ (09/03/2020)
 - OpenShift Client, **oc**
 - [Helm](https://helm.sh/docs/intro/install/), **helm**
 
@@ -200,9 +199,16 @@ oc get netpol <name> -o yaml
 
 ## 6. Launch Hazelcast
 
+:pencil2: The `start_hazelcast` script is provided to start a Hazelcast cluster. You can optionally specify the Hazelcast version as shown below. Run `./start_hazelcast -?` to see the usage.
+
+```console
+start_hazelcast wan1|wan2 [hazelcast_version] [-?]
+```
+
 ### 6.1. Launch Hazelcast in `$PROJECT_WAN2`
 
 Launch the Hazelcast cluster in the `$PROJECT_WAN2` project first. Since Hazelcast currently does not provide the WAN discovery service, we must first start the target cluster and get its member cluster IP addresses.
+
 
 ```bash
 cd_k8s oc_helm_wan; cd bin_sh
@@ -343,24 +349,24 @@ Output:
 `$PROJECT_WAN1`
 
 ```console
-NAME                             HOST/PORT                                                                          PATH   SERVICES                         PORT   TERMINATION   WILDCARD
-hazelcast-enterprise-mancenter   hazelcast-enterprise-mancenter-wan1.apps.7919-681139.cor00005-2.cna.ukcloud.com          hazelcast-enterprise-mancenter   http                 None
+NAME                             HOST/PORT                                              PATH   SERVICES                         PORT   TERMINATION   WILDCARD
+hazelcast-enterprise-mancenter   hazelcast-enterprise-mancenter-wan1.apps-crc.testing          hazelcast-enterprise-mancenter   http                 None
 ```
 
 `$PROJECT_WAN2`
 
 ```console
-NAME                             HOST/PORT                                                                         PATH   SERVICES                         PORT   TERMINATION   WILDCARD
-hazelcast-enterprise-mancenter   hazelcast-enterprise-mancenter-wan2.apps.7919-681139.cor00005-2.cna.ukcloud.com          hazelcast-enterprise-mancenter   http                 None
+NAME                             HOST/PORT                                              PATH   SERVICES                         PORT   TERMINATION   WILDCARD
+hazelcast-enterprise-mancenter   hazelcast-enterprise-mancenter-wan2.apps-crc.testing          hazelcast-enterprise-mancenter   http                 None
 ```
 
 Management Center URLs:
 
 Use your HOST/PORT names to form the Managemen Center URLs. For our example above, the Management Center URLs are as follows:
 
-WAN1: http://hazelcast-enterprise-mancenter-wan1.apps.7919-681139.cor00005-2.cna.ukcloud.com
+WAN1: http://hazelcast-enterprise-mancenter-wan1.apps-crc.testing
 
-WAN2: http://hazelcast-enterprise-mancenter-wan2.apps.7919-681139.cor00005-2.cna.ukcloud.com
+WAN2: http://hazelcast-enterprise-mancenter-wan2.apps-crc.testing
 
 ### Monitor WAN Replication
 
@@ -385,7 +391,7 @@ cd_k8s oc_helm_wan; cd bin_sh
 
 The `start_padogrid` script sets the Hazelcast service and the namespace so that the `perf_test` app can auto-configure the DNS address when connencting to the Hazelcast cluster.
 
-*If `perf_test` in the next section fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in [Section 10](#10-manually-configuring-perf_test).*
+*If `perf_test` in the next section fails to connect to the Hazelcast cluster then you may need to manually configure the Hazelcast client as described in [Section 10](#10-manually-configuring-perf_test).*
 
 ## 9. Ingest Data to `$PROJECT_WAN1`
 

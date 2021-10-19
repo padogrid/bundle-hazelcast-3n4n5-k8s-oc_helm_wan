@@ -11,7 +11,7 @@ NAME
    $EXECUTABLE - Start the Hazelcast OpenShift operator and a Hazelcast cluster
 
 SYNOPSIS
-   $EXECUTABLE wan1|wan2 [-?]
+   $EXECUTABLE wan1|wan2 [hazelcast_version] [-?]
 
 DESCRIPTION
    Starts the Hazelcast OpenShift operator and a Hazelcast cluster.
@@ -20,6 +20,22 @@ OPTIONS
    wan1|wan2
              This option is required. 'wan1' stops Hazelcast in the '$PROJECT_WAN1' project and 
              'wan2' stops Hazelcast in the '$PROJECT_WAN2' project.
+
+   hazelcast_version
+             Hazelcast image version. If unspecified, then the latest Hazelcast image version is used.
+
+EXAMPLES:
+   # Start the latest Hazelcast OSS in the wan1 project
+   ./$EXECUTABLE wan1
+
+   # Start Hazelcast OSS version 4.2.1 in the wan1 project
+   ./$EXECUTABLE wan1 4.2.1
+
+   # Start the latest Hazelcast Enterprise in the wan1 project
+   ./$EXECUTABLE wan1
+
+   # Start Hazelcast Enterprise 4.2.1 in the wan1 proeject
+   ./$EXECUTABLE wan1 4.2.1
 
 SEE ALSO
    wan1/hazelcast/, wan2/hazelast/
@@ -40,9 +56,16 @@ else
    NAMESPACE=$PROJECT_WAN2
 fi
 
+if [ "$2" != "" ]; then
+   VERSION=$2
+else
+   VERSION=latest
+fi
+
 echo ""
 echo "WAN=$WAN"
 echo "NAMESPACE=$NAMESPACE"
+echo "VERSION=$VERSION"
 echo ""
 
 pushd $APP_DIR/$WAN/hazelcast > /dev/null
@@ -50,5 +73,6 @@ pushd $APP_DIR/$WAN/hazelcast > /dev/null
    helm install --values=values.yaml \
                 --namespace=$NAMESPACE \
                 --set hazelcast.licenseKeySecretName=hz-license-key-secret \
+                --set image.tag=$VERSION \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
 popd > /dev/null
