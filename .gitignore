@@ -27,6 +27,7 @@ plugins
 .workspace
 .cluster
 workspace.code-workspace
+setenv.sh0
 
 # PadoGrid workspace directories
 apps
