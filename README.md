@@ -97,7 +97,7 @@ oc new-project $PROJECT_WAN2
 
 **This section is optional and only applies to CRC users.**
 
-If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (O    CP), then to allow read/write permissions, we need to create additional persistent volumes usi    ng **hostPath** for PadoGrid. PadoGrid stores workspaces in the `/opt/padogrid/workspaces` dir    ectory, which can be optionally mounted to a persistent volume. Let’s create a couple of volum    es in the master node as follows.
+If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (O    CP), then to allow read/write permissions, we need to create additional persistent volumes using **hostPath** for PadoGrid. PadoGrid stores workspaces in the `/opt/padogrid/workspaces` dir    ectory, which can be optionally mounted to a persistent volume. Let’s create a couple of volum    es in the master node as follows.
 
 ```bash
 # Login to the master node
