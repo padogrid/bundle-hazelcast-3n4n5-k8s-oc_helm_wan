@@ -24,7 +24,7 @@ This bundle installs PadoGrid and Hazelcast containers in two separate projects 
 - OpenShift Client, **oc**
 - [Helm](https://helm.sh/docs/intro/install/), **helm**
 
-:exclamation: If you are using OpenShift 3.x (3.11+ in particular), then this bundle depends on `redhat/openshift-ovs-networkpolicy`, to create **NetworkPolicy** objects for enabling communications between projects. The `bin_sh/init_netpol` script is provided to allow project-to-project network connections. Please see [Section 5](#5-initialize-openshift-cluster),  [1] and [2] for details.
+❗ If you are using OpenShift 3.x (3.11+ in particular), then this bundle depends on `redhat/openshift-ovs-networkpolicy`, to create **NetworkPolicy** objects for enabling communications between projects. The `bin_sh/init_netpol` script is provided to allow project-to-project network connections. Please see [Section 5](#5-initialize-openshift-cluster),  [1] and [2] for details.
 
 ## Directory Tree View
 
@@ -93,41 +93,7 @@ oc new-project $PROJECT_WAN1
 oc new-project $PROJECT_WAN2
 ```
 
-## 2. CRC Users (Optional): Create Mountable Persistent Volumes in Master Node
-
-**This section is optional and only applies to CRC users.**
-
-If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (O    CP), then to allow read/write permissions, we need to create additional persistent volumes using **hostPath** for PadoGrid. PadoGrid stores workspaces in the `/opt/padogrid/workspaces` dir    ectory, which can be optionally mounted to a persistent volume. Let’s create a couple of volum    es in the master node as follows.
-
-```bash
-# Login to the master node
-ssh -i ~/.crc/machines/crc/id_rsa core@$(crc ip)
-
-# Create hostPath volumes. We only need one but let's create two (2)
-# in case you want to run addional pods.
-sudo mkdir -p /mnt/vol1
-sudo mkdir -p /mnt/vol2
-sudo chmod -R 777 /mnt/vol1
-sudo chmod -R 777 /mnt/vol2
-sudo chcon -R -t svirt_sandbox_file_t /mnt/vol1 /mnt/vol2
-sudo restorecon -R /mnt/vol1 /mnt/vol2
-exit
-```
-
-We will use the volumes created as follows:
-
-| Container     | CDC File               | Container Path           | Volume Path |
-| ------------- | ---------------------- | ------------------------ | ----------- |
-| PadoGrid      | padogrid/padogrid.yaml | /opt/padogrid/workspaces | /mnt/vol?   |
-
-We can now create the required persistent volumes using **hostPath** by executing the following.
-
-```bash
-cd_k8s oc_helm_wan; cd padogrid
-oc create -f pv-hostPath.yaml
-```
-
-## 3. Build Local Environment
+## 2. Build Local Environment
 
 Run `build_app` to intialize your local environment.
 
@@ -141,7 +107,7 @@ The `build_app` script performs the following:
 - Creates`cluster`, `wan1`, and `wan2` directories containing OpenShift configuration files.
 - Updates `secret.yaml` with the encrypted Hazelcast license key.
 
-## 4. Add User to `anyuid` SCC (Security Context Constraints)
+## 3. Add User to `anyuid` SCC (Security Context Constraints)
 
 PadoGrid runs as a non-root user that requires read/write permissions to the persistent volume. Let's add your project's default user to the anyuid SCC.
 
@@ -157,9 +123,9 @@ users:
 - system:serviceaccount:wan2:default
 ```
 
-## 5. Initialize OpenShift Cluster
+## 4. Initialize OpenShift Cluster
 
-### 5.1 CRD and Cluster Role
+### 4.1 CRD and Cluster Role
 
 We need to setup cluster-level objects to enable project-to-project communications. The `init_cluster` script is provided to accomplish the following:
 
@@ -171,9 +137,9 @@ cd_k8s oc_helm_wan; cd bin_sh
 ./init_cluster
 ```
 
-### 5.2 NetworkPolicy (for OpenShift 3.x only)
+### 4.2 NetworkPolicy (for OpenShift 3.x only)
 
-:exclamation: *Skip this section if are using OpenShift 4.x.*
+❗ *Skip this section if are using OpenShift 4.x.*
 
 - Create **NetworkPolicy** Objects for both projects
 
@@ -198,17 +164,17 @@ oc describe netpol <name>
 oc get netpol <name> -o yaml
 ```
 
-:pencil2: *NetworkPolicy is project scoped such that it will be deleted when the project is deleted.*
+✏️ *NetworkPolicy is project scoped such that it will be deleted when the project is deleted.*
 
-## 6. Launch Hazelcast
+## 5. Launch Hazelcast
 
-:pencil2: The `start_hazelcast` script is provided to start a Hazelcast cluster. You can optionally specify the Hazelcast version as shown below. Run `./start_hazelcast -?` to see the usage.
+✏️ The `start_hazelcast` script is provided to start a Hazelcast cluster. You can optionally specify the Hazelcast version as shown below. Run `./start_hazelcast -?` to see the usage.
 
 ```console
 start_hazelcast wan1|wan2 [hazelcast_version] [-?]
 ```
 
-### 6.1. Launch Hazelcast in `$PROJECT_WAN2`
+### 5.1. Launch Hazelcast in `$PROJECT_WAN2`
 
 Launch the Hazelcast cluster in the `$PROJECT_WAN2` project first. Since Hazelcast currently does not provide the WAN discovery service, we must first start the target cluster and get its member cluster IP addresses.
 
@@ -286,7 +252,7 @@ Hazelcast Cluster IP Addresses Determined:
 Service DNS: hazelcast-enterprise.wan2.svc.cluster.local
 ```
 
-### 6.2. Launch Hazelcast in `$PROJECT_WAN1`
+### 5.2. Launch Hazelcast in `$PROJECT_WAN1`
 
 Once `$PROJECT_WAN2` cluster has all the Hazelcast members running, run the `init_wan1` script to intialize the Hazelcast configuration files for the `$PROJECT_WAN1` project. The `init_wan1` script updates the `wan1/hazelcast/hazelcast.yaml` file with the `$PROJECT_WAN2` Hazelcast IP addresses for the WAN publisher.
 
@@ -305,7 +271,7 @@ cd_k8s oc_helm_wan; cd bin_sh
 Follow th steps in the [previous section](#61-Launch-Hazelcast-in-PROJECT_WAN2) to verify the **wan1** cluster status and fix the security context contraints issue as needed.
 
 
-## 7. Create Routes
+## 6. Create Routes
 
 View services:
 
@@ -383,7 +349,7 @@ Open the browser with both Mangement Center URLs and login using the user name `
 
 ![WAN2 Management Center](images/wan2-mancenter.png)
 
-## 8. Start PadoGrid
+## 7. Start PadoGrid
 
 Start PadoGrid in the `$PROJECT_WAN1` project. We will use PadoGrid to ingest data into the **wan1** cluster, which in turn will replicate the data to the **wan2** cluster. 
 
@@ -396,7 +362,7 @@ The `start_padogrid` script sets the Hazelcast service and the namespace so that
 
 *If `perf_test` in the next section fails to connect to the Hazelcast cluster then you may need to manually configure the Hazelcast client as described in [Section 10](#10-manually-configuring-perf_test).*
 
-## 9. Ingest Data to `$PROJECT_WAN1`
+## 8. Ingest Data to `$PROJECT_WAN1`
 
 Login to the PadoGrid pod in the first project, i.e., `$PROJECT_WAN1`.
 
@@ -409,10 +375,11 @@ oc project $PROJECT_WAN1
 Create the `perf_test` app.
 
 ```bash
-create_app
+create_app -product hazelcast
+switch_cluster myhz
 ```
 
-### 9.1. Eligibility and Profile
+### 8.1. Eligibility and Profile
 
 Ingest eligibility and profile blobs into Hazelcast in `$PROJECT_WAN1`.
 
@@ -429,7 +396,9 @@ cd_app perf_test; cd bin_sh
 ./read_cache profile
 ```
 
-### 9.2. Customer and Order
+### 8.2. Customer and Order
+
+✏️ This section requires your pod to have access to the Internet, otherwise, the `build_app` script will fail.
 
 If you want to ingest additional data that are not blobs, then first build the `perf_test` and run `test_group` as shown below.
 
@@ -455,7 +424,7 @@ Exit from the PadoGrid pod.
 exit
 ```
 
-## 10. Manually Configuring `perf_test`
+## 9. Manually Configuring `perf_test`
 
 The `test_ingestion` and `test_group` scripts may fail to connect to the Hazelcast cluster if you start PadoGrid before you start Hazelcast. In that case, restarting PadoGrid should fix the problem. If it still fails even after you started Hazelcast before PadoGrid, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
 
@@ -472,9 +441,9 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `hazelcast-enter
                 </kubernetes>
 ```
 
-## 11. Teardown
+## 10. Teardown
 
-:exclamation: The cleanup script may hang due to a known customer resource finalizer issue [3]. If it hangs, then Ctrl+C and run it again. The `cleanp` script remove the CRD finalizers before deleting the CRD but you might need to run it twice to overcome the hanging issue.
+❗ The cleanup script may hang due to a known customer resource finalizer issue [3]. If it hangs, then Ctrl+C and run it again. The `cleanp` script remove the CRD finalizers before deleting the CRD but you might need to run it twice to overcome the hanging issue.
 
 ```bash
 cd_k8s oc_helm_wan; cd bin_sh
