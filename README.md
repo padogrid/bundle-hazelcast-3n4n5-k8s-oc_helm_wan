@@ -3,7 +3,7 @@
 ---
 
 <!-- Platforms -->
-[![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS)
+[![PadoGrid 1.x](https://github.com/padogrid/padogrid/wiki/images/padogrid-padogrid-1.x.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-PadoGrid-1.x) [![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS) [![Kubernetes](https://github.com/padogrid/padogrid/wiki/images/padogrid-kubernetes.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Kubernetes)
 
 # Hazelcast WAN Replication on OpenShift using Helm Charts
 
@@ -65,12 +65,28 @@ k8s/oc_helm_wan/
     └── wan2
 ```
 
+## 0. Hazelcast Enterprise License Key
+
+Place your Hazelcast Enterprise license key in the RWE environment file as follows.
+
+```bash
+cd_rwe
+vi .hazelcastenv.sh
+```
+
+Set IMDG_LICENSE_KEY and MC_LICENSE_KEY in `.hazelcastenv.sh`:
+
+```bash
+IMDG_LICENSE_KEY=<your license key>
+MC_LICENSE_KEY=<your license key>
+```
+
 ## 1. Create Projects
 
 This bundle requires two (2) OpenShift projects. It is preconfigured with the project names, **wan1** and **wan2**. You can change the project names in the `setenv.sh` file as follows.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 vi setenv.sh
 ```
 
@@ -86,7 +102,7 @@ export PROJECT_WAN2="wan2"
 Source in the `setenv.sh` file.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 . ./setenv.sh
 ```
 
@@ -102,7 +118,7 @@ oc new-project $PROJECT_WAN2
 Run `build_app` to intialize your local environment.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 ./build_app
 ```
 
@@ -137,7 +153,7 @@ We need to setup cluster-level objects to enable project-to-project communicatio
 - Apply **ClusterRole** for Hazelcast Operator and Hazelcast
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 ./init_cluster
 ```
 
@@ -148,7 +164,7 @@ cd_k8s oc_helm_wan; cd bin_sh
 - Create **NetworkPolicy** Objects for both projects
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 ./init_netpol
 ```
 
@@ -184,8 +200,8 @@ Launch the Hazelcast cluster in the `$PROJECT_WAN2` project first. Since Hazelca
 
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
-./start_hazelcast wan2
+cd_k8s oc_helm_wan/bin_sh
+./start_hazelcast $PROJECT_WAN2
 ```
 
 Hazelcast has been configured with securityContext enabled. It might fail to start due to the security constraint of fsGroup. Check the StatefulSet events using the `describe` command as follows.
@@ -230,15 +246,15 @@ securityContext:
 Restart (stop and start) the Hazelcast cluster as follows.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
-./stop_hazelcast wan2
-./start_hazelcast wan2
+cd_k8s oc_helm_wan/bin_sh
+./stop_hazelcast $PROJECT_WAN2
+./start_hazelcast $PROJECT_WAN2
 ```
 
 Wait till the `$PROJECT_WAN2` cluster has all **three (3)** pods running. You can run the `show_member_ips` script to monitor the cluster IP addresses as follows.
 
 ```bash
-watch ./show_hazelcast_ips wan2
+watch ./show_hazelcast_ips $PROJECT_WAN2
 ```
 
 Output:
@@ -261,19 +277,18 @@ Service DNS: hazelcast-enterprise.wan2.svc.cluster.local
 Once `$PROJECT_WAN2` cluster has all the Hazelcast members running, run the `init_wan1` script to intialize the Hazelcast configuration files for the `$PROJECT_WAN1` project. The `init_wan1` script updates the `wan1/hazelcast/hazelcast.yaml` file with the `$PROJECT_WAN2` Hazelcast IP addresses for the WAN publisher.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 ./init_wan1
 ```
 
 Now, launch the Hazelcast cluster in the `$PROJECT_WAN1` project.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
-./start_hazelcast wan1
+cd_k8s oc_helm_wan/bin_sh
+./start_hazelcast $PROJECT_WAN1
 ```
 
-Follow th steps in the [previous section](#61-Launch-Hazelcast-in-PROJECT_WAN2) to verify the **wan1** cluster status and fix the security context contraints issue as needed.
-
+Follow th steps in the [previous section](#51-launch-hazelcast-in-project_wan2) to verify the **wan1** cluster status and fix the security context contraints issue as needed.
 
 ## 6. Create Routes
 
@@ -358,7 +373,7 @@ Open the browser with both Mangement Center URLs and login using the user name `
 Start PadoGrid in the `$PROJECT_WAN1` project. We will use PadoGrid to ingest data into the **wan1** cluster, which in turn will replicate the data to the **wan2** cluster. 
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 ./start_padogrid wan1
 ```
 
@@ -371,7 +386,7 @@ The `start_padogrid` script sets the Hazelcast service and the namespace so that
 Login to the PadoGrid pod in the first project, i.e., `$PROJECT_WAN1`.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 oc project $PROJECT_WAN1
 ./login_padogrid_pod
 ```
@@ -388,14 +403,14 @@ switch_cluster myhz
 Ingest eligibility and profile blobs into Hazelcast in `$PROJECT_WAN1`.
 
 ```bash
-cd_app perf_test; cd bin_sh
+cd_app perf_test/bin_sh
 ./test_ingestion -run
 ```
 
 Read ingested eligibility and profile blobs from Hazelcast in `$PROJECT_WAN1`.
 
 ```bash
-cd_app perf_test; cd bin_sh
+cd_app perf_test/bin_sh
 ./read_cache eligibility
 ./read_cache profile
 ```
@@ -409,7 +424,7 @@ If you want to ingest additional data that are not blobs, then first build the `
 Ingest customers and orders into Hazelcast in `$PROJECT_WAN1`.
 
 ```bash
-cd_app perf_test; cd bin_sh
+cd_app perf_test/bin_sh
 ./build_app
 ./test_group -run -prop ../etc/group-factory.properties
 ```
@@ -417,7 +432,7 @@ cd_app perf_test; cd bin_sh
 Read ingested customers and orders from Hazelcast in `$PROJECT_WAN1`.
 
 ```bash
-cd_app perf_test; cd bin_sh
+cd_app perf_test/bin_sh
 ./read_cache nw/customers
 ./read_cache nw/orders
 ```
@@ -450,9 +465,9 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `hazelcast-enter
 ❗ The cleanup script may hang due to a known customer resource finalizer issue [3]. If it hangs, then Ctrl+C and run it again. The `cleanp` script remove the CRD finalizers before deleting the CRD but you might need to run it twice to overcome the hanging issue.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm_wan/bin_sh
 
-# Cleanup all. Run it again if it hangs.
+# Cleanup all. Ctr-C and run it again if it hangs. See [3].
 ./cleanup -all
 
 # Delete projects
